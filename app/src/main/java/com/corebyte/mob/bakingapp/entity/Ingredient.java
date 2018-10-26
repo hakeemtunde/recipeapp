@@ -1,18 +1,23 @@
 package com.corebyte.mob.bakingapp.entity;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Ingredient {
 
-    private int mQuantity;
+    @SerializedName("quantity")
+    private float mQuantity;
+    @SerializedName("measure")
     private String mMeasure;
+    @SerializedName("ingredient")
     private String mIngredient;
 
     public Ingredient() {}
 
-    public int getQuantity() {
+    public float getQuantity() {
         return mQuantity;
     }
 
-    public void setQuantity(int mQuantity) {
+    public void setQuantity(float mQuantity) {
         this.mQuantity = mQuantity;
     }
 
@@ -30,5 +35,14 @@ public class Ingredient {
 
     public void setIngredient(String mIngredient) {
         this.mIngredient = mIngredient;
+    }
+
+    @Override
+    public String toString() {
+        return "Ingredient{" +
+                "mQuantity=" + mQuantity +
+                ", mMeasure='" + mMeasure + '\'' +
+                ", mIngredient='" + mIngredient + '\'' +
+                '}';
     }
 }

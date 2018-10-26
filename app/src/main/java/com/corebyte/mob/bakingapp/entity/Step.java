@@ -1,11 +1,18 @@
 package com.corebyte.mob.bakingapp.entity;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Step {
 
-    private int mId;
+    @SerializedName("id")
+    private Integer mId;
+    @SerializedName("shortDescription")
     private String mShortDescription;
+    @SerializedName("description")
     private String mDescription;
+    @SerializedName("videoURL")
     private String mVideoUrl;
+    @SerializedName("thumbnailURL")
     private String mThumbnailUrl;
 
     public Step() {}
@@ -48,5 +55,16 @@ public class Step {
 
     public void setThumbnailUrl(String mThumbnailUrl) {
         this.mThumbnailUrl = mThumbnailUrl;
+    }
+
+    @Override
+    public String toString() {
+        return "Step{" +
+                "mId=" + mId +
+                ", mShortDescription='" + mShortDescription + '\'' +
+                ", mDescription='" + mDescription + '\'' +
+                ", mVideoUrl='" + mVideoUrl + '\'' +
+                ", mThumbnailUrl='" + mThumbnailUrl + '\'' +
+                '}';
     }
 }

@@ -32,7 +32,7 @@ public class JsonParser {
         return INSTANCE;
     }
 
-    public List<Recipe> test(Context context) {
+    public List<Recipe> fetchRecipes(Context context) {
         List<Recipe> recipes = null;
         try {
             String data = loadJsonFile(context);
@@ -47,7 +47,7 @@ public class JsonParser {
         return recipes;
     }
 
-    public String loadJsonFile(Context context) throws IOException {
+    private String loadJsonFile(Context context) throws IOException {
         InputStream inputStream = context.getAssets().open(FILE_NAME);
         int filesize = inputStream.available();
         byte[] buffer = new byte[filesize];
@@ -56,7 +56,7 @@ public class JsonParser {
         return new String(buffer, FILE_ENCODE_FORMAT);
     }
 
-    public List<Recipe> parseUsingGson(String data) throws JSONException {
+    private List<Recipe> parseUsingGson(String data) throws JSONException {
 
         JSONArray jsonarray = new JSONArray(data);
 

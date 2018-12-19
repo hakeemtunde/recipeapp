@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">bakingapp</string>
+    <string name="steps_label">Steps: </string>
+    <string name="servings_label">Servings: </string>
+    <string name="prev_label">PREV</string>
+    <string name="next_label">NEXT</string>
 </resources>

@@ -1,8 +1,11 @@
 package com.corebyte.mob.bakingapp.entity;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.SerializedName;
 
-public class Step {
+public class Step implements Parcelable {
 
     @SerializedName("id")
     private Integer mId;
@@ -57,6 +60,28 @@ public class Step {
         this.mThumbnailUrl = mThumbnailUrl;
     }
 
+    public static Parcelable.Creator CREATOR = new Parcelable.Creator(){
+
+        @Override
+        public Step createFromParcel(Parcel parcel) {
+            return new Step(parcel);
+        }
+
+        @Override
+        public Step[] newArray(int size) {
+            return new Step[size];
+        }
+    };
+
+    public Step(Parcel parcel) {
+        this.mId = parcel.readInt();
+        this.mShortDescription = parcel.readString();
+        this.mDescription = parcel.readString();
+        this.mThumbnailUrl = parcel.readString();
+        this.mVideoUrl = parcel.readString();
+
+    }
+
     @Override
     public String toString() {
         return "Step{" +
@@ -66,5 +91,19 @@ public class Step {
                 ", mVideoUrl='" + mVideoUrl + '\'' +
                 ", mThumbnailUrl='" + mThumbnailUrl + '\'' +
                 '}';
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeInt(mId);
+        parcel.writeString(mShortDescription);
+        parcel.writeString(mDescription);
+        parcel.writeString(mThumbnailUrl);
+        parcel.writeString(mVideoUrl);
     }
 }

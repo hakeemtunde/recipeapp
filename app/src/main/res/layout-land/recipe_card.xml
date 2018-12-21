@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/layout_margin_padding">
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/cv"
+        app:cardUseCompatPadding="true"
+        app:cardElevation="@dimen/cardElevation"
+        app:cardBackgroundColor="@color/cardBackground">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/layout_margin_padding">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/recipe_iv"
+                android:layout_centerVertical="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginRight="@dimen/layout_margin_padding"
+                />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/recipe_name_tv"
+                android:layout_below="@id/recipe_iv"
+                android:layout_alignBottom="@id/recipe_iv"
+                android:layout_alignParentTop="true"
+
+                android:layout_centerHorizontal="true"
+
+                android:textSize="@dimen/recipe_title_text_size"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/steps_title_tv"
+                android:layout_toRightOf="@+id/recipe_iv"
+                android:layout_below="@+id/recipe_name_tv"
+                android:text="@string/steps_label"
+
+                android:layout_centerHorizontal="true"
+
+                android:textSize="@dimen/min_text_size" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/steps_tv"
+                android:layout_toRightOf="@+id/steps_title_tv"
+                android:layout_below="@+id/recipe_name_tv"
+                android:textSize="@dimen/min_text_size" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/serving_title_tv"
+                android:layout_toRightOf="@id/recipe_iv"
+                android:layout_below="@+id/steps_title_tv"
+                android:text="@string/servings_label"
+
+                android:layout_centerHorizontal="true"
+
+                android:textSize="@dimen/min_text_size"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/serving_tv"
+                android:layout_toRightOf="@id/serving_title_tv"
+                android:layout_below="@+id/steps_tv"
+                android:textSize="@dimen/min_text_size"/>
+
+        </RelativeLayout>
+
+    </android.support.v7.widget.CardView>
+
+</LinearLayout>

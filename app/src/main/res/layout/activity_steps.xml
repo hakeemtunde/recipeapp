@@ -6,6 +6,11 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <com.google.android.exoplayer2.ui.PlayerView
+        android:id="@+id/videoPlayer"
+        android:layout_width="match_parent"
+        android:layout_height="300dp" />
+
     <TextView
         android:id="@+id/step_counter_tv"
         android:layout_width="match_parent"

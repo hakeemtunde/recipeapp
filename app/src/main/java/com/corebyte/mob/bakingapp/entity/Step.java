@@ -1,11 +1,21 @@
 package com.corebyte.mob.bakingapp.entity;
 
-public class Step {
+import android.os.Parcel;
+import android.os.Parcelable;
 
-    private int mId;
+import com.google.gson.annotations.SerializedName;
+
+public class Step implements Parcelable {
+
+    @SerializedName("id")
+    private Integer mId;
+    @SerializedName("shortDescription")
     private String mShortDescription;
+    @SerializedName("description")
     private String mDescription;
+    @SerializedName("videoURL")
     private String mVideoUrl;
+    @SerializedName("thumbnailURL")
     private String mThumbnailUrl;
 
     public Step() {}
@@ -48,5 +58,52 @@ public class Step {
 
     public void setThumbnailUrl(String mThumbnailUrl) {
         this.mThumbnailUrl = mThumbnailUrl;
+    }
+
+    public static Parcelable.Creator CREATOR = new Parcelable.Creator(){
+
+        @Override
+        public Step createFromParcel(Parcel parcel) {
+            return new Step(parcel);
+        }
+
+        @Override
+        public Step[] newArray(int size) {
+            return new Step[size];
+        }
+    };
+
+    public Step(Parcel parcel) {
+        this.mId = parcel.readInt();
+        this.mShortDescription = parcel.readString();
+        this.mDescription = parcel.readString();
+        this.mThumbnailUrl = parcel.readString();
+        this.mVideoUrl = parcel.readString();
+
+    }
+
+    @Override
+    public String toString() {
+        return "Step{" +
+                "mId=" + mId +
+                ", mShortDescription='" + mShortDescription + '\'' +
+                ", mDescription='" + mDescription + '\'' +
+                ", mVideoUrl='" + mVideoUrl + '\'' +
+                ", mThumbnailUrl='" + mThumbnailUrl + '\'' +
+                '}';
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeInt(mId);
+        parcel.writeString(mShortDescription);
+        parcel.writeString(mDescription);
+        parcel.writeString(mThumbnailUrl);
+        parcel.writeString(mVideoUrl);
     }
 }

@@ -2,9 +2,9 @@ package com.corebyte.mob.bakingapp.ui.fragment;
 
 import android.support.v7.widget.LinearLayoutManager;
 
-public class MasterFragment extends AbstractMasterFragment {
+public class MainMasterFragment extends AbstractMasterFragment {
 
-    public MasterFragment() {}
+    public MainMasterFragment() {}
 
     @Override
     public void setLayoutManager() {

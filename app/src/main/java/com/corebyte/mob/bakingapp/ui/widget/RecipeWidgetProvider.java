@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.widget.RemoteViews;
 
 import com.corebyte.mob.bakingapp.R;
+import com.corebyte.mob.bakingapp.ui.IngredientActivity;
 import com.corebyte.mob.bakingapp.ui.StepsActivity;
 
 public class RecipeWidgetProvider extends AppWidgetProvider {
@@ -24,7 +25,7 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
             views.setRemoteAdapter(R.id.widgetListView, intent);
 
             //handle item click
-            Intent clickIntent = new Intent(context, StepsActivity.class);
+            Intent clickIntent = new Intent(context, IngredientActivity.class);
             PendingIntent clickPendingIntent = TaskStackBuilder.create(context)
                     .addNextIntentWithParentStack(clickIntent)
                     .getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT);

@@ -8,6 +8,7 @@ import android.widget.RemoteViewsService;
 
 import com.corebyte.mob.bakingapp.R;
 import com.corebyte.mob.bakingapp.entity.Recipe;
+import com.corebyte.mob.bakingapp.ui.StepsActivity;
 import com.corebyte.mob.bakingapp.utils.JsonParser;
 
 import java.util.List;
@@ -53,7 +54,7 @@ public class AppWidgetRemoteViewFactory implements RemoteViewsService.RemoteView
         remoteViews.setTextViewText(R.id.widget_recipe_item, recipes.get(position).getName());
 
         Intent fillInIntent = new Intent();
-        fillInIntent.putExtra("RECIPE_KEY", recipes.get(position));
+        fillInIntent.putExtra(StepsActivity.RECIPE_KEY, recipes.get(position));
         remoteViews.setOnClickFillInIntent(R.id.widgetRecipeContainer, fillInIntent);
 
         return remoteViews;

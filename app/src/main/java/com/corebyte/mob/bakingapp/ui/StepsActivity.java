@@ -13,6 +13,7 @@ import com.corebyte.mob.bakingapp.R;
 import com.corebyte.mob.bakingapp.entity.Ingredient;
 import com.corebyte.mob.bakingapp.entity.Recipe;
 import com.corebyte.mob.bakingapp.entity.Step;
+import com.corebyte.mob.bakingapp.utils.RecipeUtil;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlayerFactory;
@@ -51,7 +52,6 @@ public class StepsActivity extends AppCompatActivity {
     private Button prevBtn;
 
     private List<Step> steps;
-    private  List<Ingredient> ingredients;
     private int stepCount;
 
     private PlayerView playerView;
@@ -67,9 +67,7 @@ public class StepsActivity extends AppCompatActivity {
             recipe = (Recipe) bundle.getParcelable(RECIPE_KEY);
 
             setTitle(recipe.getName().toUpperCase());
-
             steps = recipe.getSteps();
-            ingredients = recipe.getIngredients();
         }
 
         stepCount = 0;
@@ -83,7 +81,7 @@ public class StepsActivity extends AppCompatActivity {
 
         playerView  = findViewById(R.id.videoPlayer);
 
-        ingredientTv.setText("Ingredients: "+ prepareIngredientText());
+        ingredientTv.setText("Ingredients: "+ RecipeUtil.prepareIngredientText(recipe.getIngredients()));
 
         nextBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -168,17 +166,6 @@ public class StepsActivity extends AppCompatActivity {
         } else {
             playerView.setVisibility(View.INVISIBLE);
         }
-    }
-
-    private String prepareIngredientText() {
-
-        String ingredientStr = "";
-        for (Ingredient ingredient : ingredients) {
-            ingredientStr = ingredientStr + ingredient.getIngredient() + " Measure: " + ingredient.getMeasure()
-                    + " Quantity: " + ingredient.getQuantity() +"\n";
-        }
-
-        return ingredientStr;
     }
 
     private void releasePlayer() {

@@ -4,4 +4,6 @@
     <string name="servings_label">Servings: </string>
     <string name="prev_label">PREV</string>
     <string name="next_label">NEXT</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
 </resources>

@@ -31,6 +31,8 @@ import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 
 
+import org.w3c.dom.Text;
+
 import java.util.List;
 
 public class StepsActivity extends AppCompatActivity {
@@ -44,6 +46,7 @@ public class StepsActivity extends AppCompatActivity {
     private TextView stepShortDescTv;
     private TextView stepFullDescTv;
     private TextView stepCountTv;
+    private TextView ingredientTv;
     private Button nextBtn;
     private Button prevBtn;
 
@@ -73,10 +76,14 @@ public class StepsActivity extends AppCompatActivity {
         stepCountTv = (TextView)findViewById(R.id.step_counter_tv);
         stepShortDescTv = (TextView)findViewById(R.id.step_short_desc_tv);
         stepFullDescTv = (TextView)findViewById(R.id.step_full_desc_tv);
+        ingredientTv = (TextView)findViewById(R.id.step_ingredient_tv);
+
         nextBtn = (Button)findViewById(R.id.next_btn);
         prevBtn = (Button)findViewById(R.id.prev_btn);
 
         playerView  = findViewById(R.id.videoPlayer);
+
+        ingredientTv.setText("Ingredients: "+ prepareIngredientText());
 
         nextBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -100,13 +107,13 @@ public class StepsActivity extends AppCompatActivity {
         Step step = steps.get(stepCount);
 
         stepCountTv.setText("Step "+String.valueOf(stepCount+1));
-        stepShortDescTv.setText(step.getShortDescription());
+        stepShortDescTv.setText("Short Description: " + step.getShortDescription());
         stepFullDescTv.setText(step.getDescription());
 
         boolean isEmptyUri = step.getVideoUrl().isEmpty();
 
         if (!isEmptyUri) {
-            playVideo(step.getVideoUrl());
+            //playVideo(step.getVideoUrl());
         }
 
         hideOrShowPlayer(isEmptyUri);
@@ -124,6 +131,18 @@ public class StepsActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        releasePlayer();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        releasePlayer();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
         releasePlayer();
     }
 
@@ -151,6 +170,16 @@ public class StepsActivity extends AppCompatActivity {
         }
     }
 
+    private String prepareIngredientText() {
+
+        String ingredientStr = "";
+        for (Ingredient ingredient : ingredients) {
+            ingredientStr = ingredientStr + ingredient.getIngredient() + " Measure: " + ingredient.getMeasure()
+                    + " Quantity: " + ingredient.getQuantity() +"\n";
+        }
+
+        return ingredientStr;
+    }
 
     private void releasePlayer() {
         if (player != null) {

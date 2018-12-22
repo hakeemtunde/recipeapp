@@ -1,10 +1,13 @@
 package com.corebyte.mob.bakingapp.ui;
 
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.net.Uri;
@@ -13,6 +16,8 @@ import com.corebyte.mob.bakingapp.R;
 import com.corebyte.mob.bakingapp.entity.Ingredient;
 import com.corebyte.mob.bakingapp.entity.Recipe;
 import com.corebyte.mob.bakingapp.entity.Step;
+import com.corebyte.mob.bakingapp.ui.fragment.StepDetailFragment;
+import com.corebyte.mob.bakingapp.ui.fragment.StepMasterFragment;
 import com.corebyte.mob.bakingapp.utils.RecipeUtil;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
@@ -36,26 +41,16 @@ import org.w3c.dom.Text;
 
 import java.util.List;
 
+import static com.corebyte.mob.bakingapp.ui.fragment.StepDetailFragment.INGREDIENT_KEY;
+
 public class StepsActivity extends AppCompatActivity {
 
     public static final String TAG = StepsActivity.class.getSimpleName();
 
     public static final String RECIPE_KEY = "RECIPE_KEY";
+
     private Recipe recipe;
-
-
-    private TextView stepShortDescTv;
-    private TextView stepFullDescTv;
-    private TextView stepCountTv;
-    private TextView ingredientTv;
-    private Button nextBtn;
-    private Button prevBtn;
-
-    private List<Step> steps;
-    private int stepCount;
-
-    private PlayerView playerView;
-    private SimpleExoPlayer player;
+    private boolean dualPanel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,113 +60,104 @@ public class StepsActivity extends AppCompatActivity {
         if (getIntent().hasExtra(RECIPE_KEY)) {
             Bundle bundle = getIntent().getExtras();
             recipe = (Recipe) bundle.getParcelable(RECIPE_KEY);
-
             setTitle(recipe.getName().toUpperCase());
-            steps = recipe.getSteps();
         }
 
-        stepCount = 0;
-        stepCountTv = (TextView)findViewById(R.id.step_counter_tv);
-        stepShortDescTv = (TextView)findViewById(R.id.step_short_desc_tv);
-        stepFullDescTv = (TextView)findViewById(R.id.step_full_desc_tv);
-        ingredientTv = (TextView)findViewById(R.id.step_ingredient_tv);
+        StepMasterFragment stepMasterFragment = null;
 
-        nextBtn = (Button)findViewById(R.id.next_btn);
-        prevBtn = (Button)findViewById(R.id.prev_btn);
+        FrameLayout frameLayout = (FrameLayout)findViewById(R.id.stepFrameLayout);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        playerView  = findViewById(R.id.videoPlayer);
+        //portrait
+        if (frameLayout != null) {
 
-        ingredientTv.setText("Ingredients: "+ RecipeUtil.prepareIngredientText(recipe.getIngredients()));
+            dualPanel = false;
 
-        nextBtn.setOnClickListener(new View.OnClickListener() {
+            stepMasterFragment = (StepMasterFragment)fragmentManager
+                    .findFragmentByTag("MASTER");
+
+            if(stepMasterFragment == null) {
+                stepMasterFragment = new StepMasterFragment();
+
+                //bundle
+                Bundle bundle = new Bundle();
+                bundle.putParcelable(RECIPE_KEY, recipe);
+                stepMasterFragment.setArguments(bundle);
+
+                fragmentTransaction.add(R.id.stepFrameLayout, stepMasterFragment);
+
+            }
+
+            StepDetailFragment stepDetailFragment = (StepDetailFragment)fragmentManager
+                    .findFragmentById(R.id.detailFrameLayout);
+            if (stepDetailFragment != null) {
+                fragmentTransaction.remove(stepDetailFragment);
+            }
+
+            fragmentTransaction.commit();
+
+        } else {
+            //landscape
+            dualPanel = true;
+            stepMasterFragment = (StepMasterFragment) fragmentManager
+                    .findFragmentById(R.id.masterFrameLayout);
+
+            if (stepMasterFragment == null) {
+                stepMasterFragment = new StepMasterFragment();
+
+                Bundle bundle = new Bundle();
+                bundle.putParcelable(RECIPE_KEY, recipe);
+                stepMasterFragment.setArguments(bundle);
+
+                fragmentTransaction.add(R.id.masterFrameLayout, stepMasterFragment);
+            }
+
+            StepDetailFragment stepDetailFragment = (StepDetailFragment)fragmentManager
+                    .findFragmentById(R.id.detailFrameLayout);
+
+            if(stepDetailFragment == null) {
+                stepDetailFragment = new StepDetailFragment();
+                fragmentTransaction.add(R.id.detailFrameLayout, stepDetailFragment);
+            }
+
+            fragmentTransaction.commit();
+
+        }
+
+        stepMasterFragment.setOnStepMasterSelectedListener(new StepMasterFragment.onStepMasterSelectedListener() {
             @Override
-            public void onClick(View view) {
-
-                if ((stepCount == (steps.size()-1))) return;
-
-                stepCount++;
-                displayRecipeStepDetail();
-
-
+            public void onItemSelected(Step step) {
+                displayRecipeStepDetail(step);
             }
         });
 
-        initializePlayer();
-        displayRecipeStepDetail();
     }
 
-    private void displayRecipeStepDetail() {
+    private void displayRecipeStepDetail(Step step) {
 
-        Step step = steps.get(stepCount);
+        if (dualPanel) {
 
-        stepCountTv.setText("Step "+String.valueOf(stepCount+1));
-        stepShortDescTv.setText("Short Description: " + step.getShortDescription());
-        stepFullDescTv.setText(step.getDescription());
+            StepDetailFragment stepDetailFragment = (StepDetailFragment)getSupportFragmentManager()
+                    .findFragmentById(R.id.detailFrameLayout);
+            stepDetailFragment.displayRecipeStepDetail(step, RecipeUtil
+                    .prepareIngredientText(recipe.getIngredients()) );
 
-        boolean isEmptyUri = step.getVideoUrl().isEmpty();
-
-        if (!isEmptyUri) {
-            //playVideo(step.getVideoUrl());
-        }
-
-        hideOrShowPlayer(isEmptyUri);
-
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if (player == null) {
-            initializePlayer();
-        }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        releasePlayer();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        releasePlayer();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        releasePlayer();
-    }
-
-    private void initializePlayer() {
-        TrackSelector trackSelection = new DefaultTrackSelector();
-        player = ExoPlayerFactory.newSimpleInstance(this, trackSelection);
-        playerView.setPlayer(player);
-        player.setPlayWhenReady(true);
-    }
-
-    private void playVideo(String videoLink) {
-        Uri videoUri =  Uri.parse(videoLink);
-        DefaultHttpDataSourceFactory dataSourceFactory = new DefaultHttpDataSourceFactory("Baking-app");
-        MediaSource mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(videoUri);
-        player.prepare(mediaSource);
-    }
-
-    private void hideOrShowPlayer(boolean isBlankLink) {
-        if (!isBlankLink) {
-            if (playerView.getVisibility() == View.INVISIBLE) {
-                playerView.setVisibility(View.VISIBLE);
-            }
         } else {
-            playerView.setVisibility(View.INVISIBLE);
+
+            Bundle bundle = new Bundle();
+            bundle.putParcelable(StepDetailFragment.STEP_KEY, step);
+            bundle.putString(INGREDIENT_KEY,
+                    RecipeUtil.prepareIngredientText(recipe.getIngredients()));
+
+            StepDetailFragment detailFragment = new StepDetailFragment();
+            detailFragment.setArguments(bundle);
+
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.stepFrameLayout, detailFragment);
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
         }
     }
 
-    private void releasePlayer() {
-        if (player != null) {
-            player.release();
-            player = null;
-        }
-    }
 }

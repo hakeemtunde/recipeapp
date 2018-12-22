@@ -1,24 +1,15 @@
 package com.corebyte.mob.bakingapp.ui;
 
-import android.content.Intent;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.widget.FrameLayout;
 
 import com.corebyte.mob.bakingapp.R;
-import com.corebyte.mob.bakingapp.adapter.RecyclerViewAdapter;
-import com.corebyte.mob.bakingapp.entity.Recipe;
-import com.corebyte.mob.bakingapp.event.RecipeEventListener;
 import com.corebyte.mob.bakingapp.ui.fragment.AbstractMasterFragment;
-import com.corebyte.mob.bakingapp.ui.fragment.MasterFragment;
+import com.corebyte.mob.bakingapp.ui.fragment.MainMasterFragment;
 import com.corebyte.mob.bakingapp.ui.fragment.MasterLandFragment;
-import com.corebyte.mob.bakingapp.utils.JsonParser;
-
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity  {
 
@@ -50,7 +41,7 @@ public class MainActivity extends AppCompatActivity  {
         }
 
         if (mPortraitMode) {
-            masterFragment = new MasterFragment();
+            masterFragment = new MainMasterFragment();
         }else {
             masterFragment = new MasterLandFragment();
         }

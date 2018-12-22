@@ -6,4 +6,6 @@
     <string name="next_label">NEXT</string>
     <string name="appwidget_text">EXAMPLE</string>
     <string name="add_widget">Add widget</string>
+    <string name="ingredient_label">INGREDIENTS</string>
 </resources>
+

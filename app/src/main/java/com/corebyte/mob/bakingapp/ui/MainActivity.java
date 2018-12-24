@@ -11,7 +11,8 @@ import com.corebyte.mob.bakingapp.ui.fragment.AbstractMasterFragment;
 import com.corebyte.mob.bakingapp.ui.fragment.MainMasterFragment;
 import com.corebyte.mob.bakingapp.ui.fragment.MasterLandFragment;
 
-public class MainActivity extends AppCompatActivity  {
+
+public class MainActivity extends AppCompatActivity {
 
     private boolean mPortraitMode;
 
@@ -32,7 +33,6 @@ public class MainActivity extends AppCompatActivity  {
             fragmentLayout = R.id.frameLayoutLand;
         }
 
-
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         masterFragment = (AbstractMasterFragment) fragmentManager.findFragmentByTag("MASTER");
 
@@ -48,7 +48,6 @@ public class MainActivity extends AppCompatActivity  {
 
         fragmentTransaction.add(fragmentLayout, masterFragment, "MASTER");
         fragmentTransaction.commit();
-
 
     }
 

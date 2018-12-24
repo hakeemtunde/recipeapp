@@ -7,5 +7,8 @@
     <string name="appwidget_text">EXAMPLE</string>
     <string name="add_widget">Add widget</string>
     <string name="ingredient_label">INGREDIENTS</string>
+
+    <string name="network_error_msg">Check network connection &#8230;</string>
+    <string name="btn_retry_text">Retry</string>
 </resources>
 

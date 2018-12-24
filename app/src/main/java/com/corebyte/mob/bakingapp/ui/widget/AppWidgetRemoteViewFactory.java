@@ -11,6 +11,7 @@ import com.corebyte.mob.bakingapp.entity.Recipe;
 import com.corebyte.mob.bakingapp.ui.StepsActivity;
 import com.corebyte.mob.bakingapp.utils.JsonParser;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AppWidgetRemoteViewFactory implements RemoteViewsService.RemoteViewsFactory {
@@ -20,7 +21,8 @@ public class AppWidgetRemoteViewFactory implements RemoteViewsService.RemoteView
 
     public AppWidgetRemoteViewFactory(Context context) {
         this.context = context;
-        recipes = JsonParser.getJsonParser().fetchRecipes(context);
+        recipes = new ArrayList<>();
+        //recipes = JsonParser.getJsonParser().fetchRecipes(context);
     }
 
     @Override

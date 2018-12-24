@@ -11,6 +11,7 @@ import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.InputStream;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
 import com.corebyte.mob.bakingapp.entity.Recipe;
@@ -32,10 +33,9 @@ public class JsonParser {
         return INSTANCE;
     }
 
-    public List<Recipe> fetchRecipes(Context context) {
+    public ArrayList<Recipe> parseResponseData(String data) {
         List<Recipe> recipes = null;
         try {
-            String data = loadJsonFile(context);
             recipes = parseUsingGson(data);
             if  (recipes == null) throw new Exception("Recipe list is null");
         }catch (IOException io) {
@@ -44,19 +44,12 @@ public class JsonParser {
             Log.e(TAG, "Exception: "+ je.getMessage());
         }
 
-        return recipes;
-    }
-
-    private String loadJsonFile(Context context) throws IOException {
-        InputStream inputStream = context.getAssets().open(FILE_NAME);
-        int filesize = inputStream.available();
-        byte[] buffer = new byte[filesize];
-        inputStream.read(buffer);
-        inputStream.close();
-        return new String(buffer, FILE_ENCODE_FORMAT);
+        return convertToArrayList(recipes);
     }
 
     private List<Recipe> parseUsingGson(String data) throws JSONException {
+
+        if(data == null) return null;
 
         JSONArray jsonarray = new JSONArray(data);
 
@@ -68,6 +61,18 @@ public class JsonParser {
         = Arrays.asList(gson.fromJson(jsonarray.toString(), Recipe[].class));
 
         return recipes;
+    }
+
+    private ArrayList<Recipe> convertToArrayList(List<Recipe> recipes) {
+
+        ArrayList<Recipe> recipeArrayList = new ArrayList<>();
+        if (recipes == null) return recipeArrayList;
+
+        for(Recipe recipe : recipes) {
+            recipeArrayList.add(recipe);
+        }
+
+        return recipeArrayList;
     }
 
 }

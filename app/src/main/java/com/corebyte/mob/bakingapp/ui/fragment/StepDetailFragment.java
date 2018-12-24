@@ -20,18 +20,29 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
+import com.google.android.exoplayer2.util.Util;
 
 public class StepDetailFragment extends Fragment {
 
     public static final String STEP_KEY = "STEP_KEY";
     public static final String INGREDIENT_KEY = "INGREDIENT_KEY";
+    public static final String CURRENT_WINDOW_KEY = "CURRENT_WINDOW_KEY";
+    public static final String PLAYBACK_POSITION_KEY = "PLAYBACK_POSITION_KEY";
+    public static final String PLAY_WHEN_READY_KEY = "PLAY_WHEN_READY_KEY";
 
+
+    private long playbackPosition;
+    private int currentWindow;
+    private boolean playWhenReady;
+    
     private TextView stepShortDescTv;
     private TextView stepFullDescTv;
     private TextView ingredientTv;
 
     private PlayerView playerView;
     private SimpleExoPlayer player;
+
+
 
     @Nullable
     @Override
@@ -80,7 +91,16 @@ public class StepDetailFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        if (player == null) {
+        if (Util.SDK_INT > 23) {
+            initializePlayer();
+        }
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if ((Util.SDK_INT <= 23 || player == null)) {
             initializePlayer();
         }
     }
@@ -88,25 +108,17 @@ public class StepDetailFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
-        releasePlayer();
+        if (Util.SDK_INT > 23) {
+            releasePlayer();
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        releasePlayer();
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        releasePlayer();
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        releasePlayer();
+        if (Util.SDK_INT <= 23) {
+            releasePlayer();
+        }
     }
 
     private void initializePlayer() {
@@ -121,6 +133,8 @@ public class StepDetailFragment extends Fragment {
         DefaultHttpDataSourceFactory dataSourceFactory = new DefaultHttpDataSourceFactory("Baking-app");
         MediaSource mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(videoUri);
         player.prepare(mediaSource);
+        player.setPlayWhenReady(playWhenReady);
+        player.seekTo(currentWindow, playbackPosition);
     }
 
     private void hideOrShowPlayer(boolean isBlankLink) {
@@ -135,6 +149,9 @@ public class StepDetailFragment extends Fragment {
 
     private void releasePlayer() {
         if (player != null) {
+            playbackPosition = player.getCurrentPosition();
+            currentWindow = player.getCurrentWindowIndex();
+            playWhenReady = player.getPlayWhenReady();
             player.release();
             player = null;
         }

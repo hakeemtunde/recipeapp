@@ -1,6 +1,8 @@
 package com.corebyte.mob.bakingapp.ui.fragment;
 
 import android.accounts.NetworkErrorException;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -12,7 +14,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,18 +25,17 @@ import com.corebyte.mob.bakingapp.entity.Recipe;
 import com.corebyte.mob.bakingapp.event.RecipeEventListener;
 import com.corebyte.mob.bakingapp.ui.NetworkErrorActivity;
 import com.corebyte.mob.bakingapp.ui.StepsActivity;
+import com.corebyte.mob.bakingapp.ui.widget.RecipeWidgetProvider;
 import com.corebyte.mob.bakingapp.utils.JsonParser;
 import com.corebyte.mob.bakingapp.utils.thread.RecipeAsyncTaskLoader;
 
 import java.util.ArrayList;
-import java.util.List;
-
 
 import static com.corebyte.mob.bakingapp.utils.RecipeUtil.RECIPES_KEY;
 import static com.corebyte.mob.bakingapp.utils.RecipeUtil.RECIPE_URI;
 
 public abstract class AbstractMasterFragment extends Fragment
-        implements LoaderManager.LoaderCallbacks<String>  {
+        implements LoaderManager.LoaderCallbacks<String> {
 
     private static final int LOADER_ID = 101;
 
@@ -44,7 +44,8 @@ public abstract class AbstractMasterFragment extends Fragment
     private ArrayList<Recipe> recipes;
     private ProgressBar progressBar;
 
-    public AbstractMasterFragment() {}
+    public AbstractMasterFragment() {
+    }
 
     @Nullable
     @Override
@@ -54,8 +55,8 @@ public abstract class AbstractMasterFragment extends Fragment
         ifNetworkErrorLaunchNetworkErrorActivity(getActivity());
 
         View view = inflater.inflate(R.layout.recipe_list, container, false);
-        progressBar = (ProgressBar)view.findViewById(R.id.progressBar);
-        recyclerView = (RecyclerView)view.findViewById(R.id.recipe_list_rv);
+        progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
+        recyclerView = (RecyclerView) view.findViewById(R.id.recipe_list_rv);
         recyclerView.setHasFixedSize(true);
         setLayoutManager();
 
@@ -72,10 +73,10 @@ public abstract class AbstractMasterFragment extends Fragment
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
 
-        if (savedInstanceState !=null && savedInstanceState.containsKey(RECIPES_KEY)) {
+        if (savedInstanceState != null && savedInstanceState.containsKey(RECIPES_KEY)) {
             recipes = savedInstanceState.getParcelableArrayList(RECIPES_KEY);
-        }else{
-            //load data
+        } else {
+            //load data online
             initializeLoader();
         }
     }
@@ -115,8 +116,20 @@ public abstract class AbstractMasterFragment extends Fragment
                 Intent intent = new Intent(getActivity(), StepsActivity.class);
                 intent.putExtra(StepsActivity.RECIPE_KEY, recipe);
                 startActivity(intent);
+
+                AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getActivity());
+                ComponentName widget = new ComponentName(getActivity(), RecipeWidgetProvider.class);
+                int[] ids = appWidgetManager.getAppWidgetIds(widget);
+
+                Intent widgetIntent = new Intent(getActivity(), RecipeWidgetProvider.class);
+                widgetIntent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+
+                widgetIntent.putExtra(StepsActivity.RECIPE_KEY, recipe);
+                widgetIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
+                getActivity().sendBroadcast(widgetIntent);
             }
         });
+
         recyclerView.setAdapter(adapter);
 
         unLoadProgressBar();
@@ -158,9 +171,9 @@ public abstract class AbstractMasterFragment extends Fragment
         LoaderManager loaderManager = getLoaderManager();
         Loader<String> loader = loaderManager.getLoader(LOADER_ID);
 
-        if(loader == null) {
+        if (loader == null) {
             loaderManager.initLoader(LOADER_ID, null, this).forceLoad();
-        }else {
+        } else {
             loaderManager.restartLoader(LOADER_ID, null, this).forceLoad();
         }
     }

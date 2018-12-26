@@ -12,12 +12,13 @@ public class NetClient {
     private BufferedReader bufferedReader;
     private int statusCode;
 
-    public NetClient() {}
+    public NetClient() {
+    }
 
     public String makeHttpRequest(String recipeuri) throws IOException {
 
         URL url = new URL(recipeuri);
-        clientConnection = (HttpURLConnection)url.openConnection();
+        clientConnection = (HttpURLConnection) url.openConnection();
 
         StringBuilder responseStringBuilder = new StringBuilder();
         String inputLine;

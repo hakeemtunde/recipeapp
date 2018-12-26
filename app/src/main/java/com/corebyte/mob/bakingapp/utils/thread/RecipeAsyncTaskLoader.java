@@ -13,10 +13,9 @@ import java.io.IOException;
 public class RecipeAsyncTaskLoader extends AsyncTaskLoader<String> {
 
     private static String TAG = RecipeAsyncTaskLoader.class.getSimpleName();
-
+    NetworkErrorHandler networkErrorHandler;
     private String recipePath;
     private String responseData;
-    NetworkErrorHandler networkErrorHandler;
 
     public RecipeAsyncTaskLoader(Context context, String path) {
         super(context);
@@ -37,19 +36,19 @@ public class RecipeAsyncTaskLoader extends AsyncTaskLoader<String> {
 
         try {
             responseData = netClient.makeHttpRequest(recipePath);
-        }catch (IOException io){
+        } catch (IOException io) {
             if (networkErrorHandler != null) {
                 networkErrorHandler.onNetworkError(io.getMessage());
             } else {
-                Log.e(TAG, "connection error: "+ io.getMessage(), io);
+                Log.e(TAG, "connection error: " + io.getMessage(), io);
             }
 
 
-        }finally {
+        } finally {
             try {
                 netClient.disconnect();
-            }catch (IOException io){
-                Log.e(TAG, "closing connection: "+ io.getMessage(), io);
+            } catch (IOException io) {
+                Log.e(TAG, "closing connection: " + io.getMessage(), io);
             }
         }
 
@@ -59,7 +58,7 @@ public class RecipeAsyncTaskLoader extends AsyncTaskLoader<String> {
     @Override
     protected void onStartLoading() {
         //catch
-        if (responseData !=null) {
+        if (responseData != null) {
             deliverResult(responseData);
 
         } else {

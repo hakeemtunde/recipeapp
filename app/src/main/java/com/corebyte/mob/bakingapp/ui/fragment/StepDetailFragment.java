@@ -29,12 +29,12 @@ public class StepDetailFragment extends Fragment {
     public static final String CURRENT_WINDOW_KEY = "CURRENT_WINDOW_KEY";
     public static final String PLAYBACK_POSITION_KEY = "PLAYBACK_POSITION_KEY";
     public static final String PLAY_WHEN_READY_KEY = "PLAY_WHEN_READY_KEY";
-
+    private static final String TAG = StepDetailFragment.class.getSimpleName();
 
     private long playbackPosition;
     private int currentWindow;
     private boolean playWhenReady;
-    
+
     private TextView stepShortDescTv;
     private TextView stepFullDescTv;
     private TextView ingredientTv;
@@ -42,6 +42,8 @@ public class StepDetailFragment extends Fragment {
     private PlayerView playerView;
     private SimpleExoPlayer player;
 
+    private Step step;
+    private String ingredientTxt;
 
 
     @Nullable
@@ -55,15 +57,15 @@ public class StepDetailFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        stepShortDescTv = (TextView)view.findViewById(R.id.step_short_desc_tv);
-        stepFullDescTv = (TextView)view.findViewById(R.id.step_full_desc_tv);
-        ingredientTv = (TextView)view.findViewById(R.id.step_ingredient_tv);
+        stepShortDescTv = (TextView) view.findViewById(R.id.step_short_desc_tv);
+        stepFullDescTv = (TextView) view.findViewById(R.id.step_full_desc_tv);
+        ingredientTv = (TextView) view.findViewById(R.id.step_ingredient_tv);
         playerView = view.findViewById(R.id.videoPlayer);
 
         Bundle bundle = getArguments();
         if (bundle != null && bundle.containsKey(STEP_KEY)) {
-            Step step = bundle.getParcelable(STEP_KEY);
-            String ingredientTxt = bundle.getString(INGREDIENT_KEY);
+            step = bundle.getParcelable(STEP_KEY);
+            ingredientTxt = bundle.getString(INGREDIENT_KEY);
 
             initializePlayer();
 
@@ -91,7 +93,7 @@ public class StepDetailFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        if (Util.SDK_INT > 23) {
+        if (Util.SDK_INT > 23 && player == null) {
             initializePlayer();
         }
 
@@ -121,6 +123,36 @@ public class StepDetailFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(STEP_KEY, step);
+        outState.putString(INGREDIENT_KEY, ingredientTxt);
+        outState.putInt(CURRENT_WINDOW_KEY, currentWindow);
+        outState.putLong(PLAYBACK_POSITION_KEY, playbackPosition);
+        outState.putBoolean(PLAY_WHEN_READY_KEY, playWhenReady);
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if (savedInstanceState != null && savedInstanceState.containsKey(STEP_KEY)) {
+            step = savedInstanceState.getParcelable(STEP_KEY);
+            ingredientTxt = savedInstanceState.getString(INGREDIENT_KEY);
+
+            if (step != null) {
+
+                currentWindow = savedInstanceState.getInt(CURRENT_WINDOW_KEY);
+                playbackPosition = savedInstanceState.getLong(PLAYBACK_POSITION_KEY);
+                playWhenReady = savedInstanceState.getBoolean(PLAY_WHEN_READY_KEY);
+
+                displayRecipeStepDetail(step, ingredientTxt);
+                playVideo(step.getVideoUrl());
+            }
+
+        }
+    }
+
     private void initializePlayer() {
         TrackSelector trackSelection = new DefaultTrackSelector();
         player = ExoPlayerFactory.newSimpleInstance(getActivity(), trackSelection);
@@ -129,12 +161,15 @@ public class StepDetailFragment extends Fragment {
     }
 
     private void playVideo(String videoLink) {
-        Uri videoUri =  Uri.parse(videoLink);
+        Uri videoUri = Uri.parse(videoLink);
         DefaultHttpDataSourceFactory dataSourceFactory = new DefaultHttpDataSourceFactory("Baking-app");
         MediaSource mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(videoUri);
         player.prepare(mediaSource);
-        player.setPlayWhenReady(playWhenReady);
-        player.seekTo(currentWindow, playbackPosition);
+
+        if(playbackPosition != 0) {
+            player.seekTo(currentWindow, playbackPosition);
+        }
+
     }
 
     private void hideOrShowPlayer(boolean isBlankLink) {

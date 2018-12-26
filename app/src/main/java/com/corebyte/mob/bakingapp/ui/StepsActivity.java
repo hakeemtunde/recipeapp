@@ -1,45 +1,17 @@
 package com.corebyte.mob.bakingapp.ui;
 
+import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.net.Uri;
 
 import com.corebyte.mob.bakingapp.R;
-import com.corebyte.mob.bakingapp.entity.Ingredient;
 import com.corebyte.mob.bakingapp.entity.Recipe;
 import com.corebyte.mob.bakingapp.entity.Step;
 import com.corebyte.mob.bakingapp.ui.fragment.StepDetailFragment;
 import com.corebyte.mob.bakingapp.ui.fragment.StepMasterFragment;
 import com.corebyte.mob.bakingapp.utils.RecipeUtil;
-import com.google.android.exoplayer2.DefaultLoadControl;
-import com.google.android.exoplayer2.DefaultRenderersFactory;
-import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
-import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.TrackSelection;
-import com.google.android.exoplayer2.trackselection.TrackSelector;
-import com.google.android.exoplayer2.ui.PlayerView;
-import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
-
-
-import org.w3c.dom.Text;
-
-import java.util.List;
 
 import static com.corebyte.mob.bakingapp.ui.fragment.StepDetailFragment.INGREDIENT_KEY;
 
@@ -48,7 +20,8 @@ public class StepsActivity extends AppCompatActivity {
     public static final String TAG = StepsActivity.class.getSimpleName();
 
     public static final String RECIPE_KEY = "RECIPE_KEY";
-
+    StepMasterFragment stepMasterFragment;
+    StepDetailFragment stepDetailFragment;
     private Recipe recipe;
     private boolean dualPanel;
 
@@ -63,67 +36,49 @@ public class StepsActivity extends AppCompatActivity {
             setTitle(recipe.getName().toUpperCase());
         }
 
-        StepMasterFragment stepMasterFragment = null;
-
-        FrameLayout frameLayout = (FrameLayout)findViewById(R.id.stepFrameLayout);
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-        //portrait
+        stepMasterFragment = (StepMasterFragment) fragmentManager
+                .findFragmentByTag("MASTER");
+
+        if (stepMasterFragment == null) {
+            stepMasterFragment = new StepMasterFragment();
+
+            //bundle
+            Bundle bundle = new Bundle();
+            bundle.putParcelable(RECIPE_KEY, recipe);
+            stepMasterFragment.setArguments(bundle);
+            fragmentTransaction.add(R.id.masterFrameLayout, stepMasterFragment, "MASTER");
+        }
+
+        FrameLayout frameLayout = (FrameLayout) findViewById(R.id.detailFrameLayout);
+        //landscape
         if (frameLayout != null) {
-
-            dualPanel = false;
-
-            stepMasterFragment = (StepMasterFragment)fragmentManager
-                    .findFragmentByTag("MASTER");
-
-            if(stepMasterFragment == null) {
-                stepMasterFragment = new StepMasterFragment();
-
-                //bundle
-                Bundle bundle = new Bundle();
-                bundle.putParcelable(RECIPE_KEY, recipe);
-                stepMasterFragment.setArguments(bundle);
-
-                fragmentTransaction.add(R.id.stepFrameLayout, stepMasterFragment);
-
-            }
-
-            StepDetailFragment stepDetailFragment = (StepDetailFragment)fragmentManager
+            dualPanel = true;
+            stepDetailFragment = (StepDetailFragment) fragmentManager
                     .findFragmentById(R.id.detailFrameLayout);
+
+            if (stepDetailFragment == null) {
+                stepDetailFragment = new StepDetailFragment();
+                fragmentTransaction.add(R.id.detailFrameLayout, stepDetailFragment, "DETAIL");
+            } else {
+                fragmentTransaction.replace(R.id.detailFrameLayout, stepDetailFragment);
+            }
+            fragmentTransaction.replace(R.id.masterFrameLayout, stepMasterFragment);
+
+        } else {
+            //portrait
+            dualPanel = false;
+            StepDetailFragment stepDetailFragment = (StepDetailFragment) fragmentManager
+                    .findFragmentByTag("DETAIL");
             if (stepDetailFragment != null) {
                 fragmentTransaction.remove(stepDetailFragment);
             }
 
-            fragmentTransaction.commit();
-
-        } else {
-            //landscape
-            dualPanel = true;
-            stepMasterFragment = (StepMasterFragment) fragmentManager
-                    .findFragmentById(R.id.masterFrameLayout);
-
-            if (stepMasterFragment == null) {
-                stepMasterFragment = new StepMasterFragment();
-
-                Bundle bundle = new Bundle();
-                bundle.putParcelable(RECIPE_KEY, recipe);
-                stepMasterFragment.setArguments(bundle);
-
-                fragmentTransaction.add(R.id.masterFrameLayout, stepMasterFragment);
-            }
-
-            StepDetailFragment stepDetailFragment = (StepDetailFragment)fragmentManager
-                    .findFragmentById(R.id.detailFrameLayout);
-
-            if(stepDetailFragment == null) {
-                stepDetailFragment = new StepDetailFragment();
-                fragmentTransaction.add(R.id.detailFrameLayout, stepDetailFragment);
-            }
-
-            fragmentTransaction.commit();
-
         }
+
+        fragmentTransaction.commit();
 
         stepMasterFragment.setOnStepMasterSelectedListener(new StepMasterFragment.onStepMasterSelectedListener() {
             @Override
@@ -136,28 +91,29 @@ public class StepsActivity extends AppCompatActivity {
 
     private void displayRecipeStepDetail(Step step) {
 
-        if (dualPanel) {
+        StepDetailFragment stepDetailFragment = (StepDetailFragment) getSupportFragmentManager()
+                .findFragmentByTag("DETAIL");
 
-            StepDetailFragment stepDetailFragment = (StepDetailFragment)getSupportFragmentManager()
-                    .findFragmentById(R.id.detailFrameLayout);
-            stepDetailFragment.displayRecipeStepDetail(step, RecipeUtil
-                    .prepareIngredientText(recipe.getIngredients()) );
-
-        } else {
-
+        if (stepDetailFragment == null) {
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager()
+                    .beginTransaction();
             Bundle bundle = new Bundle();
             bundle.putParcelable(StepDetailFragment.STEP_KEY, step);
             bundle.putString(INGREDIENT_KEY,
                     RecipeUtil.prepareIngredientText(recipe.getIngredients()));
-
             StepDetailFragment detailFragment = new StepDetailFragment();
             detailFragment.setArguments(bundle);
-
-            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.stepFrameLayout, detailFragment);
+            fragmentTransaction.replace(R.id.masterFrameLayout, detailFragment);
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
+        } else {
+
+            stepDetailFragment.onStart();
+            stepDetailFragment.displayRecipeStepDetail(step, RecipeUtil
+                    .prepareIngredientText(recipe.getIngredients()));
+
         }
     }
+
 
 }

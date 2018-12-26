@@ -2,25 +2,22 @@ package com.corebyte.mob.bakingapp.ui.widget;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.widget.AdapterView;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
 import com.corebyte.mob.bakingapp.R;
 import com.corebyte.mob.bakingapp.entity.Recipe;
-import com.corebyte.mob.bakingapp.ui.StepsActivity;
-import com.corebyte.mob.bakingapp.utils.JsonParser;
-
-import java.util.List;
+import com.corebyte.mob.bakingapp.utils.RecipeUtil;
 
 public class AppWidgetRemoteViewFactory implements RemoteViewsService.RemoteViewsFactory {
 
     private Context context;
-    private List<Recipe> recipes;
+    private Recipe recipe;
 
-    public AppWidgetRemoteViewFactory(Context context) {
+    public AppWidgetRemoteViewFactory(Context context, Intent intent) {
         this.context = context;
-        recipes = JsonParser.getJsonParser().fetchRecipes(context);
     }
 
     @Override
@@ -30,7 +27,8 @@ public class AppWidgetRemoteViewFactory implements RemoteViewsService.RemoteView
 
     @Override
     public void onDataSetChanged() {
-
+        Log.i("Factory", "data changed");
+        recipe = RecipeUtil.retriveRecipe(context);
     }
 
     @Override
@@ -40,7 +38,7 @@ public class AppWidgetRemoteViewFactory implements RemoteViewsService.RemoteView
 
     @Override
     public int getCount() {
-        return recipes.size();
+        return recipe.getIngredients().size();
     }
 
     @Override
@@ -51,11 +49,7 @@ public class AppWidgetRemoteViewFactory implements RemoteViewsService.RemoteView
         }
 
         RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.widget_recipe_list_item);
-        remoteViews.setTextViewText(R.id.widget_recipe_item, recipes.get(position).getName());
-
-        Intent fillInIntent = new Intent();
-        fillInIntent.putExtra(StepsActivity.RECIPE_KEY, recipes.get(position));
-        remoteViews.setOnClickFillInIntent(R.id.widgetRecipeContainer, fillInIntent);
+        remoteViews.setTextViewText(R.id.widget_recipe_item, recipe.getIngredients().get(position).getIngredient());
 
         return remoteViews;
     }
@@ -79,4 +73,5 @@ public class AppWidgetRemoteViewFactory implements RemoteViewsService.RemoteView
     public boolean hasStableIds() {
         return false;
     }
+
 }

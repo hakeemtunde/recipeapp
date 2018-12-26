@@ -4,7 +4,16 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:background="#09C"
-    android:padding="@dimen/widget_margin">
+    android:padding="@dimen/app_widget_padding">
+
+    <TextView
+        android:id="@+id/widget_recipe_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="recipe name"
+        android:textColor="#F8F8F8"
+        android:textSize="14sp" />
 
     <ListView
         android:id="@+id/widgetListView"
@@ -14,6 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         tools:listitem="@layout/widget_recipe_list_item">
+
 
     </ListView>
 

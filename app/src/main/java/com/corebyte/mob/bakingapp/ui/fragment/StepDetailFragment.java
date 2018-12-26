@@ -20,11 +20,20 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
+import com.google.android.exoplayer2.util.Util;
 
 public class StepDetailFragment extends Fragment {
 
     public static final String STEP_KEY = "STEP_KEY";
     public static final String INGREDIENT_KEY = "INGREDIENT_KEY";
+    public static final String CURRENT_WINDOW_KEY = "CURRENT_WINDOW_KEY";
+    public static final String PLAYBACK_POSITION_KEY = "PLAYBACK_POSITION_KEY";
+    public static final String PLAY_WHEN_READY_KEY = "PLAY_WHEN_READY_KEY";
+    private static final String TAG = StepDetailFragment.class.getSimpleName();
+
+    private long playbackPosition;
+    private int currentWindow;
+    private boolean playWhenReady;
 
     private TextView stepShortDescTv;
     private TextView stepFullDescTv;
@@ -32,6 +41,10 @@ public class StepDetailFragment extends Fragment {
 
     private PlayerView playerView;
     private SimpleExoPlayer player;
+
+    private Step step;
+    private String ingredientTxt;
+
 
     @Nullable
     @Override
@@ -44,15 +57,15 @@ public class StepDetailFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        stepShortDescTv = (TextView)view.findViewById(R.id.step_short_desc_tv);
-        stepFullDescTv = (TextView)view.findViewById(R.id.step_full_desc_tv);
-        ingredientTv = (TextView)view.findViewById(R.id.step_ingredient_tv);
+        stepShortDescTv = (TextView) view.findViewById(R.id.step_short_desc_tv);
+        stepFullDescTv = (TextView) view.findViewById(R.id.step_full_desc_tv);
+        ingredientTv = (TextView) view.findViewById(R.id.step_ingredient_tv);
         playerView = view.findViewById(R.id.videoPlayer);
 
         Bundle bundle = getArguments();
         if (bundle != null && bundle.containsKey(STEP_KEY)) {
-            Step step = bundle.getParcelable(STEP_KEY);
-            String ingredientTxt = bundle.getString(INGREDIENT_KEY);
+            step = bundle.getParcelable(STEP_KEY);
+            ingredientTxt = bundle.getString(INGREDIENT_KEY);
 
             initializePlayer();
 
@@ -80,7 +93,16 @@ public class StepDetailFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        if (player == null) {
+        if (Util.SDK_INT > 23 && player == null) {
+            initializePlayer();
+        }
+
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if ((Util.SDK_INT <= 23 || player == null)) {
             initializePlayer();
         }
     }
@@ -88,25 +110,47 @@ public class StepDetailFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
-        releasePlayer();
+        if (Util.SDK_INT > 23) {
+            releasePlayer();
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        releasePlayer();
+        if (Util.SDK_INT <= 23) {
+            releasePlayer();
+        }
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        releasePlayer();
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(STEP_KEY, step);
+        outState.putString(INGREDIENT_KEY, ingredientTxt);
+        outState.putInt(CURRENT_WINDOW_KEY, currentWindow);
+        outState.putLong(PLAYBACK_POSITION_KEY, playbackPosition);
+        outState.putBoolean(PLAY_WHEN_READY_KEY, playWhenReady);
     }
 
     @Override
-    public void onDetach() {
-        super.onDetach();
-        releasePlayer();
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if (savedInstanceState != null && savedInstanceState.containsKey(STEP_KEY)) {
+            step = savedInstanceState.getParcelable(STEP_KEY);
+            ingredientTxt = savedInstanceState.getString(INGREDIENT_KEY);
+
+            if (step != null) {
+
+                currentWindow = savedInstanceState.getInt(CURRENT_WINDOW_KEY);
+                playbackPosition = savedInstanceState.getLong(PLAYBACK_POSITION_KEY);
+                playWhenReady = savedInstanceState.getBoolean(PLAY_WHEN_READY_KEY);
+
+                displayRecipeStepDetail(step, ingredientTxt);
+                playVideo(step.getVideoUrl());
+            }
+
+        }
     }
 
     private void initializePlayer() {
@@ -117,10 +161,15 @@ public class StepDetailFragment extends Fragment {
     }
 
     private void playVideo(String videoLink) {
-        Uri videoUri =  Uri.parse(videoLink);
+        Uri videoUri = Uri.parse(videoLink);
         DefaultHttpDataSourceFactory dataSourceFactory = new DefaultHttpDataSourceFactory("Baking-app");
         MediaSource mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(videoUri);
         player.prepare(mediaSource);
+
+        if(playbackPosition != 0) {
+            player.seekTo(currentWindow, playbackPosition);
+        }
+
     }
 
     private void hideOrShowPlayer(boolean isBlankLink) {
@@ -135,6 +184,9 @@ public class StepDetailFragment extends Fragment {
 
     private void releasePlayer() {
         if (player != null) {
+            playbackPosition = player.getCurrentPosition();
+            currentWindow = player.getCurrentWindowIndex();
+            playWhenReady = player.getPlayWhenReady();
             player.release();
             player = null;
         }

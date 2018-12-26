@@ -7,6 +7,18 @@ import com.google.gson.annotations.SerializedName;
 
 public class Step implements Parcelable {
 
+    public static Parcelable.Creator CREATOR = new Parcelable.Creator() {
+
+        @Override
+        public Step createFromParcel(Parcel parcel) {
+            return new Step(parcel);
+        }
+
+        @Override
+        public Step[] newArray(int size) {
+            return new Step[size];
+        }
+    };
     @SerializedName("id")
     private Integer mId;
     @SerializedName("shortDescription")
@@ -18,7 +30,17 @@ public class Step implements Parcelable {
     @SerializedName("thumbnailURL")
     private String mThumbnailUrl;
 
-    public Step() {}
+    public Step() {
+    }
+
+    public Step(Parcel parcel) {
+        this.mId = parcel.readInt();
+        this.mShortDescription = parcel.readString();
+        this.mDescription = parcel.readString();
+        this.mThumbnailUrl = parcel.readString();
+        this.mVideoUrl = parcel.readString();
+
+    }
 
     public int getId() {
         return mId;
@@ -58,28 +80,6 @@ public class Step implements Parcelable {
 
     public void setThumbnailUrl(String mThumbnailUrl) {
         this.mThumbnailUrl = mThumbnailUrl;
-    }
-
-    public static Parcelable.Creator CREATOR = new Parcelable.Creator(){
-
-        @Override
-        public Step createFromParcel(Parcel parcel) {
-            return new Step(parcel);
-        }
-
-        @Override
-        public Step[] newArray(int size) {
-            return new Step[size];
-        }
-    };
-
-    public Step(Parcel parcel) {
-        this.mId = parcel.readInt();
-        this.mShortDescription = parcel.readString();
-        this.mDescription = parcel.readString();
-        this.mThumbnailUrl = parcel.readString();
-        this.mVideoUrl = parcel.readString();
-
     }
 
     @Override

@@ -27,6 +27,7 @@ public class StepMasterFragment extends ListFragment {
     private onStepMasterSelectedListener onStepMasterSelectedListener;
     private Recipe recipe;
     private ArrayList<Step> steps = new ArrayList<>();
+    private StepsListAdapter adapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -46,8 +47,9 @@ public class StepMasterFragment extends ListFragment {
             steps = recipe.getSteps();
         }
 
-        StepsListAdapter adapter = new StepsListAdapter(getContext(), steps);
+        adapter = new StepsListAdapter(getContext(), steps);
         setListAdapter(adapter);
+
 
         getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -55,7 +57,7 @@ public class StepMasterFragment extends ListFragment {
                 triggerClick(position);
             }
         });
-
+        adapter.notifyDataSetChanged();
 
     }
 

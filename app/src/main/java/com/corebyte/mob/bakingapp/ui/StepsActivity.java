@@ -14,6 +14,7 @@ import com.corebyte.mob.bakingapp.ui.fragment.StepMasterFragment;
 import com.corebyte.mob.bakingapp.utils.RecipeUtil;
 
 import static com.corebyte.mob.bakingapp.ui.fragment.StepDetailFragment.INGREDIENT_KEY;
+import static com.corebyte.mob.bakingapp.ui.fragment.StepDetailFragment.STEP_KEY;
 
 public class StepsActivity extends AppCompatActivity {
 
@@ -23,6 +24,7 @@ public class StepsActivity extends AppCompatActivity {
     StepMasterFragment stepMasterFragment;
     StepDetailFragment stepDetailFragment;
     private Recipe recipe;
+    private Step step;
     private boolean dualPanel;
 
     @Override
@@ -30,7 +32,12 @@ public class StepsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_steps);
 
-        if (getIntent().hasExtra(RECIPE_KEY)) {
+        if (savedInstanceState != null) {
+            step = savedInstanceState.getParcelable(STEP_KEY);
+            recipe = savedInstanceState.getParcelable(RECIPE_KEY);
+        }
+
+        if (getIntent().hasExtra(RECIPE_KEY) && recipe == null) {
             Bundle bundle = getIntent().getExtras();
             recipe = (Recipe) bundle.getParcelable(RECIPE_KEY);
             setTitle(recipe.getName().toUpperCase());
@@ -57,27 +64,33 @@ public class StepsActivity extends AppCompatActivity {
         if (frameLayout != null) {
             dualPanel = true;
             stepDetailFragment = (StepDetailFragment) fragmentManager
-                    .findFragmentById(R.id.detailFrameLayout);
+                    .findFragmentByTag("DETAIL");
 
             if (stepDetailFragment == null) {
                 stepDetailFragment = new StepDetailFragment();
+                stepDetailFragment.setArguments(createStepDetailBundle());
+
                 fragmentTransaction.add(R.id.detailFrameLayout, stepDetailFragment, "DETAIL");
             } else {
+                //restore the last step
                 fragmentTransaction.replace(R.id.detailFrameLayout, stepDetailFragment);
             }
+
             fragmentTransaction.replace(R.id.masterFrameLayout, stepMasterFragment);
 
         } else {
             //portrait
             dualPanel = false;
-            StepDetailFragment stepDetailFragment = (StepDetailFragment) fragmentManager
+            stepDetailFragment = (StepDetailFragment) fragmentManager
                     .findFragmentByTag("DETAIL");
             if (stepDetailFragment != null) {
+                stepDetailFragment.onPause();
                 fragmentTransaction.remove(stepDetailFragment);
             }
 
         }
 
+        fragmentTransaction.setReorderingAllowed(true);
         fragmentTransaction.commit();
 
         stepMasterFragment.setOnStepMasterSelectedListener(new StepMasterFragment.onStepMasterSelectedListener() {
@@ -86,34 +99,39 @@ public class StepsActivity extends AppCompatActivity {
                 displayRecipeStepDetail(step);
             }
         });
+    }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(STEP_KEY, step);
+        outState.putParcelable(RECIPE_KEY, recipe);
     }
 
     private void displayRecipeStepDetail(Step step) {
-
+        this.step = step;
+        Bundle bundle = createStepDetailBundle();
         StepDetailFragment stepDetailFragment = (StepDetailFragment) getSupportFragmentManager()
                 .findFragmentByTag("DETAIL");
 
         if (stepDetailFragment == null) {
             FragmentTransaction fragmentTransaction = getSupportFragmentManager()
                     .beginTransaction();
-            Bundle bundle = new Bundle();
-            bundle.putParcelable(StepDetailFragment.STEP_KEY, step);
-            bundle.putString(INGREDIENT_KEY,
-                    RecipeUtil.prepareIngredientText(recipe.getIngredients()));
-            StepDetailFragment detailFragment = new StepDetailFragment();
-            detailFragment.setArguments(bundle);
-            fragmentTransaction.replace(R.id.masterFrameLayout, detailFragment);
-            fragmentTransaction.addToBackStack(null);
+            stepDetailFragment = new StepDetailFragment();
+            stepDetailFragment.setArguments(bundle);
+            fragmentTransaction.replace(R.id.masterFrameLayout, stepDetailFragment);
             fragmentTransaction.commit();
         } else {
-
+            stepDetailFragment.setArguments(bundle);
             stepDetailFragment.onStart();
-            stepDetailFragment.displayRecipeStepDetail(step, RecipeUtil
-                    .prepareIngredientText(recipe.getIngredients()));
-
         }
     }
 
-
+    private Bundle createStepDetailBundle() {
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(StepDetailFragment.STEP_KEY, step);
+        bundle.putString(INGREDIENT_KEY,
+                RecipeUtil.prepareIngredientText(recipe.getIngredients()));
+        return bundle;
+    }
 }

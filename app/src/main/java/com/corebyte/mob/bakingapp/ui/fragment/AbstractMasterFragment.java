@@ -115,6 +115,7 @@ public abstract class AbstractMasterFragment extends Fragment
             public void onRecipeClicked(Recipe recipe) {
                 Intent intent = new Intent(getActivity(), StepsActivity.class);
                 intent.putExtra(StepsActivity.RECIPE_KEY, recipe);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 startActivity(intent);
 
                 AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(getActivity());

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,6 +47,27 @@ public class StepDetailFragment extends Fragment {
     private String ingredientTxt;
 
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        if (savedInstanceState != null && savedInstanceState.containsKey(STEP_KEY)) {
+            step = savedInstanceState.getParcelable(STEP_KEY);
+            ingredientTxt = savedInstanceState.getString(INGREDIENT_KEY);
+
+            if (step != null) {
+
+                currentWindow = savedInstanceState.getInt(CURRENT_WINDOW_KEY);
+                playbackPosition = savedInstanceState.getLong(PLAYBACK_POSITION_KEY);
+                playWhenReady = savedInstanceState.getBoolean(PLAY_WHEN_READY_KEY);
+
+                displayRecipeStepDetail(step, ingredientTxt);
+                playVideo(step.getVideoUrl());
+            }
+
+        }
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -67,15 +89,18 @@ public class StepDetailFragment extends Fragment {
             step = bundle.getParcelable(STEP_KEY);
             ingredientTxt = bundle.getString(INGREDIENT_KEY);
 
-            initializePlayer();
+            if (step != null) {
+                initializePlayer();
+                displayRecipeStepDetail(step, ingredientTxt);
+            }
 
-            displayRecipeStepDetail(step, ingredientTxt);
         }
 
     }
 
     public void displayRecipeStepDetail(Step step, String ingredientTxt) {
 
+        if (stepShortDescTv == null || stepFullDescTv == null || ingredientTv == null) return;
         stepShortDescTv.setText("Short Description: " + step.getShortDescription());
         stepFullDescTv.setText(step.getDescription());
         ingredientTv.setText(ingredientTxt);
@@ -93,10 +118,19 @@ public class StepDetailFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+
         if (Util.SDK_INT > 23 && player == null) {
             initializePlayer();
         }
 
+        if (getArguments() != null && getArguments().containsKey(STEP_KEY)) {
+            step = getArguments().getParcelable(STEP_KEY);
+            ingredientTxt = getArguments().getString(INGREDIENT_KEY);
+
+            if (step != null) {
+                displayRecipeStepDetail(step, ingredientTxt);
+            }
+        }
     }
 
     @Override
@@ -104,6 +138,7 @@ public class StepDetailFragment extends Fragment {
         super.onResume();
         if ((Util.SDK_INT <= 23 || player == null)) {
             initializePlayer();
+
         }
     }
 
@@ -140,6 +175,7 @@ public class StepDetailFragment extends Fragment {
             step = savedInstanceState.getParcelable(STEP_KEY);
             ingredientTxt = savedInstanceState.getString(INGREDIENT_KEY);
 
+            Log.i(TAG, "onViewStateRestored");
             if (step != null) {
 
                 currentWindow = savedInstanceState.getInt(CURRENT_WINDOW_KEY);
@@ -161,12 +197,15 @@ public class StepDetailFragment extends Fragment {
     }
 
     private void playVideo(String videoLink) {
+
+        if (player == null) return;
+
         Uri videoUri = Uri.parse(videoLink);
         DefaultHttpDataSourceFactory dataSourceFactory = new DefaultHttpDataSourceFactory("Baking-app");
         MediaSource mediaSource = new ExtractorMediaSource.Factory(dataSourceFactory).createMediaSource(videoUri);
         player.prepare(mediaSource);
 
-        if(playbackPosition != 0) {
+        if (playbackPosition != 0) {
             player.seekTo(currentWindow, playbackPosition);
         }
 

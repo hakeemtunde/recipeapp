@@ -10,14 +10,21 @@
 data that contains the recipes' instructions, ingredients, videos and images.
 
   
-## What I Learnt
+## Features/Rubrics
 
-* Use MediaPlayer/Exoplayer to display videos.
-* Handle error cases in Android Network calls.
-* Add a widget to the app experience.
-* Leverage a third-party library into the app.
-* Use Fragments to create a responsive design that works on phones and tablets.
-* Demonstrated how to handle unexpected input in the json data
+* Use MediaPlayer/Exoplayer to display videos
+* App properly initializes and releases video assets when appropriate
+* Handle error cases in Android
+* Leverage a third-party library into the app
+* Use Fragments to create a responsive design that works on phones and tablets
+* App uses Master Detail Flow to display recipe steps and navigation between them.
+* Handle unexpected input in the json data
+* App properly retrieve media assets from the provided network links and properly handle network requests
+* App uses RecyclerView and can handle recipe steps that include videos or images
+* App allow navigation between individual recipes and recipe steps
+* App makes use of Espresso to test aspects of the UI
+* Application has a companion homescreen widget that displays ingredient list for desired recipe
+
 
 
   
